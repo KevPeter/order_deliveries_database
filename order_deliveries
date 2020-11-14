@@ -1,0 +1,183 @@
+    create table Ref_Payment_Methods
+    (payment_method_code varchar(15) NOT NULL,
+    payment_method_description varchar(20),
+    PRIMARY KEY (payment_method_code)
+    )
+go 
+    create table Customers
+    (customer_id char(9) NOT NULL,
+    payment_method_code varchar(15) NOT NULL,
+    customer_name varchar(20) NOT NULL,
+    customer_phone char(10),
+    customer_email varchar(25) NOT NULL,
+    date_became_customer DATE ,
+    other_customer_details varchar(30),
+    PRIMARY KEY (customer_id),
+    FOREIGN KEY (payment_method_code) REFERENCES Ref_Payment_Methods(payment_method_code)
+    )
+go
+    create table Addresses
+    (address_id char(5) NOT NULL,
+    line_1 varchar(30),
+    line_2 varchar(30),
+    line_3 varchar(30),
+    line_4 varchar(30),
+    city varchar(15),
+    zip_postcode char(5),
+    state_province_county varchar(15),
+    country varchar(20),
+    other_address_details varchar(30),
+    PRIMARY KEY (address_id)
+    )
+go
+    create table Ref_Address_Types
+    (address_type_code char(10) NOT NULL,
+    address_type_description varchar(20),
+    PRIMARY KEY (address_type_code) 
+    )
+go
+    create table Customer_Addresses
+    (customer_id char(9) NOT NULL,
+    address_id char(5) NOT NULL,
+    date_from DATE NOT NULL,
+    address_type_code char(10) NOT NULL,
+    date_to DATE,
+    PRIMARY KEY (date_from),
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id),
+    FOREIGN KEY (address_type_code) REFERENCES Ref_Address_Types(address_type_code),
+    FOREIGN KEY (address_id) REFERENCES Addresses(address_id)
+    )
+go
+    create table Regular_Orders
+    (regular_order_id char(10) NOT NULL,
+    customer_id char(9) NOT NULL,
+    order_details varchar(25),
+    PRIMARY KEY (regular_order_id),
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
+    )
+go 
+    create table Suppliers
+    (supplier_id char(9) NOT NULL,
+    supplier_details varchar(25),
+    PRIMARY KEY (supplier_id)
+    )
+go 
+    create table Products
+    (product_id char(11) NOT NULL,
+    supplier_id char(9) NOT NULL,
+    product_details varchar(30),
+    product_name varchar(20),
+    product_price varchar(6),
+    product_description varchar(30),
+    PRIMARY KEY (product_id),
+    FOREIGN KEY (supplier_id) REFERENCES Suppliers(supplier_id)
+    )
+go 
+    create table Regular_Order_Products
+    (regular_order_id char(10) NOT NULL,
+    product_id char(11) NOT NULL,
+    FOREIGN KEY (regular_order_id) REFERENCES Regular_Orders(regular_order_id),
+    FOREIGN KEY (product_id) REFERENCES Products(product_id)
+    )
+go 
+    create table Ref_Order_Status
+    (order_status_code char(7) NOT NULL,
+    order_status_description varchar(15),
+    PRIMARY KEY (order_status_code)
+    )
+go 
+    create table Actual_Orders
+    (actual_order_id char(9) NOT NULL,
+    order_status_code char(7) NOT NULL,
+    regular_order_id char(10) NOT NULL,
+    actual_order_date DATE,
+    order_details varchar(30),
+    PRIMARY KEY (actual_order_id),
+    FOREIGN KEY (order_status_code) REFERENCES Ref_Order_Status(order_status_code),
+    FOREIGN KEY (regular_order_id) REFERENCES Regular_Orders(regular_order_id)
+    )
+go
+    create table Actual_Order_Products
+    (actual_order_id char(9) NOT NULL,
+    product_id char(11) NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES Products(product_id),
+    FOREIGN KEY (actual_order_id) REFERENCES Actual_Orders(actual_order_id)
+    )
+go 
+    create table Employees
+    (employee_id char(9) NOT NULL,
+    employee_address_id char(5) NOT NULL,
+    employee_name varchar(20) NOT NULL,
+    employee_phone char(10),
+    other_employee_details varchar(25),
+    PRIMARY KEY (employee_id),
+    FOREIGN KEY (employee_address_id) REFERENCES Addresses(address_id) 
+    )
+go 
+    create table Delivery_Routes
+    (route_id char(7) NOT NULL,
+    route_name varchar(20),
+    other_route_details varchar(25),
+    PRIMARY KEY (route_id)
+    )
+go 
+    create table Delivery_Route_Locations
+    (location_code char(9) NOT NULL,
+    route_id char(7) NOT NULL,
+    location_address_id char(5) NOT NULL,
+    location_name varchar(20),
+    other_location_details varchar(25),
+    PRIMARY KEY (location_code),
+    FOREIGN KEY (route_id) REFERENCES Delivery_Routes(route_id),
+    FOREIGN KEY (location_address_id) REFERENCES Addresses(address_id)
+    )
+go 
+    create table Trucks
+    (truck_id char(9) NOT NULL,
+    truck_license_number char(8) NOT NULL,
+    truck_details varchar(25),
+    PRIMARY KEY (truck_id)
+    )
+go 
+    create table Ref_Delivery_Status
+    (delivery_status_code char(5) NOT NULL,
+    delivery_status_description varchar(25),
+    PRIMARY KEY (delivery_status_code)
+    )
+go 
+    create table Deliveries
+    (delivery_id char(9) NOT NULL,
+    actual_order_id char(9) NOT NULL,
+    delivery_status_code char(5) NOT NULL,
+    employee_id char(9) NOT NULL,
+    location_code char(9) NOT NULL,
+    truck_id char(9) NOT NULL,
+    delivery_date DATE,
+    other_delivery_details varchar(20),
+    PRIMARY KEY (delivery_id),
+    FOREIGN KEY (actual_order_id) REFERENCES Actual_Orders(actual_order_id),
+    FOREIGN KEY (delivery_status_code) REFERENCES Ref_Delivery_Status(delivery_status_code),
+    FOREIGN KEY (employee_id) REFERENCES Employees(employee_id),
+    FOREIGN KEY (location_code) REFERENCES Delivery_Route_Locations(location_code),
+    FOREIGN KEY (truck_id) REFERENCES Trucks(truck_id)
+    )
+go 
+    create table Customer_Messages
+    (customer_id char(9) NOT NULL,
+    message_id char(9),
+    message_details varchar(30),
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
+    )
+go
+    create table Truck_Accidents
+    (accident_id char(9),
+    truck_id char(9),
+    employee_id char(9),
+    delivery_id char(9),
+    accident_date DATE,
+    accident_details varchar(20),
+    FOREIGN KEY (truck_id) REFERENCES Trucks(truck_id),
+    FOREIGN KEY (employee_id) REFERENCES Employees(employee_id),
+    FOREIGN KEY (delivery_id) REFERENCES Deliveries(delivery_id)
+    )
+go
